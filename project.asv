@@ -1,0 +1,72 @@
+%% Constructing the MRI Image
+clc,close all , clear all
+load('rawkneedata.mat')
+subplot(1,2,1)
+imshow(dat);
+title('Frequencies in the K-Space')
+inverse = fftshift(abs(ifft2(dat)));
+inverse = mat2gray(inverse);
+subplot(1,2,2)
+imshow(inverse)
+title('Final MRI Image')
+%% 4.1 Histograms
+clc , close all , clear all
+load('rawkneedata.mat')
+inverse = fftshift(abs(ifft2(dat)));
+inverse = mat2gray(inverse);
+kneeMRI = mat2gray(imread('kneeMRI.jpg'));
+subplot(1,2,1)
+imhist(inverse)
+title('histogram of the noisy picture');
+subplot(1,2,2)
+imhist(kneeMRI)
+title('histogram of the noiseless Image')
+%% 4.3
+subplot(1,2,1)
+imshow(inverse);
+title('MRI image with noise')
+subplot(1,2,2)
+imshow(avgFilter(inverse))
+title('MRI image filtered with a Mean filter')
+%% 4.4
+subplot(1,2,1)
+imshow(inverse);
+title('MRI image with noise')
+subplot(1,2,2)
+imshow(medfilt2(inverse,[3 3]))
+title('MRI image filtered with a Median filter')
+%% 4.6
+subplot(1,2,1)
+imshow(inverse);
+title('MRI image with noise')
+subplot(1,2,2)
+imshow(imnlmfilt(inverse))
+title('MRI image filtered with a nlm filter')
+%[peaksnr, snr] = psnr(imboxfilt3(inverse), kneeMRI); 
+%fprintf('\n The Peak-SNR value is %0.4f', peaksnr);
+%fprintf('\n The SNR value is %0.4f \n', snr);
+%disp(snr(MeanFilter(inverse),kneeMRI))
+%disp(psnr(MeanFilter(inverse),kneeMRI))
+%disp(snr(im2double(MedianFilter(final,5)),im2double(image)))
+%disp(psnr(im2double(image),im2double(MedianFilter(final,5))))
+%disp(snr(im2double(GaussianFilter(final)),im2double(image)))
+%disp(psnr(im2double(image),im2double(GaussianFilter(final))))
+%disp(snr(im2double(NLM(final)),im2double(image)))
+%disp(psnr(im2double(image),im2double(NLM(final))))
+function filteredImage = avgFilter(input)
+    [m, n] = size(input);
+    filteredImage = zeros(m, n);
+    for i=2:m-1
+        for j=2:n-1
+            neighbors = input(i-1:i+1, j-1:j+1);
+            filteredImage(i, j) = mean(neighbors,'all');
+        end
+    end
+end
+function output = GaussianFilter(input)
+    kernel_size = 3;%sigma = 1
+    [X, Y] = meshgrid(-(kernel_size-1)/2:(kernel_size-1)/2, -(kernel_size-1)/2:(kernel_size-1)/2);
+    gaussian_kernel = exp(-9 * (X.^2 + Y.^2) / 2);
+    gaussian_kernel = gaussian_kernel / sum(gaussian_kernel, 'all');
+    output = conv2(double(input), gaussian_kernel, 'same');    
+end
